@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {
+            font-family: Helvetica;
+            text-align: center;
+        }
+        .weatherBox {
+            width:210px;
+            padding: 10px;
+            font-size: 14px;
+            float: left;
+        }
+        div {
+            display: inline-block;
+        }
+        .day {
+            color: #fff;
+            background-color: #64A9C1;
+            padding: 5px;
+            width: 210px;
+            font-size: 18px;
+            text-align: left;
+        }
+        .iconURL {
+            float: left;
+            position: relative;
+            margin-top: 10px;
+        }
+        .conditions {
+            position: relative;
+            left: 20px;
+            padding: 10px;
+            width: 100px;
+            margin-top: 5px;
+        }
+        .lowTemp {
+            position: relative;
+            bottom: 6px;
+            left: 18px;
+         }
+        .highTemp {
+             position: relative;
+             font-weight: bold;
+             right: 76px;
+             top: 20px;
+         }
+        #title {
+            font-size: 24px;
+            text-transform: uppercase;
+            color: #858585;
+        }
+        #container {
+            width: 700px;
+        }
+    </style>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js"></script>
+    <script>
+
+    function showError() {
+        $('body').hide();
+    }
+
+    $(document).ready(function($) {
+        var zip = window.location.search.match(/zip_code=(\d{5})/)
+        if (zip) {
+            zip = zip[1];
+        } else {
+            return showError();
+        }
+
+        var date = window.location.search.match(/date=(\d{2}\/\d{2}\/\d{4})/)
+        if (date) {
+            date = date[1];
+        } else {
+            return showError();
+        }
+
+        var dateSplit = date.split('/');
+
+        var mm = dateSplit[0];
+        var dd = dateSplit[1];
+        var yyyy = dateSplit[2];
+
+        $.ajax({
+            url : "http://api.wunderground.com/api/e0d2b72c995eb908/geolookup/conditions/q/zip/" + zip + ".json",
+            dataType : "jsonp",
+            success : function(parsed_json) {
+                var location = parsed_json['location']['city'];
+                document.getElementById("location").innerHTML = location;
+            },
+            error: showError
+        });
+
+        $.ajax({
+            url : "http://api.wunderground.com/api/e0d2b72c995eb908/forecast10day/q/zip/" + zip + ".json",
+            dataType : "jsonp",
+            success : function(parsed_json) {
+                if (!parsed_json.forecast) {
+                    return showError();
+                }
+
+                var forecasts = parsed_json.forecast.simpleforecast.forecastday;
+
+                var day1 = new Date(yyyy + '-' + mm + '-' + dd);
+
+                // convert to local timezone
+                day1.setHours(day1.getHours() + new Date().getTimezoneOffset() / 60)
+
+                var day2 = new Date(day1);
+                var day3 = new Date(day1);
+                day2.setDate(day1.getDate()+1);
+                day3.setDate(day1.getDate()+2);
+
+                $.each([day1, day2, day3], function (index) {
+                    var day = this;
+                    var forecast = $.grep(forecasts, function (forecast) {
+                        var daysDate = forecast.date;
+
+                        var match = daysDate.day === day.getDate() &&
+                            daysDate.year === day.getFullYear() &&
+                            daysDate.month === day.getMonth() + 1;
+
+                        return match;
+                    });
+
+                    if (!forecast.length) {
+                        showError();
+                        return false;
+                    }
+
+                    forecast = forecast[0];
+
+                    var $box = $('.weatherBox').eq(index);
+
+                    $box.find(".highTemp").html(forecast.high.fahrenheit + "&deg;");
+                    $box.find(".lowTemp").html("/ " + forecast.low.fahrenheit + "&deg; F");
+                    $box.find(".iconURL").html("<img src= " + forecast.icon_url + ">");
+                    $box.find(".conditions").html(forecast.conditions);
+                    $box.find(".day").html(forecast.date.weekday + ":");
+                });
+            },
+            error: showError
+        });
+    });
+    </script>
+</head>
+
+<body>
+    <div id="container">
+        <div id="title">
+            Weather Forecast For <div id="location"></div>
+        </div>
+        <p>
+        <div class="weatherBox">
+            <div class="day"></div>
+            <div class="iconURL"></div>
+            <div class="conditions"></div>
+            <div class="highTemp"></div>
+            <div class="lowTemp"></div>
+        </div>
+        <div class="weatherBox">
+            <div class="day"></div>
+            <div class="iconURL"></div>
+            <div class="conditions"></div>
+            <div class="highTemp"></div>
+            <div class="lowTemp"></div>
+        </div>
+        <div class="weatherBox">
+            <div class="day"></div>
+            <div class="iconURL"></div>
+            <div class="conditions"></div>
+            <div class="highTemp"></div>
+            <div class="lowTemp"></div>
+        </div>
+    </div>
+</body>
+
+</html>
