@@ -11,6 +11,7 @@
             padding: 10px;
             font-size: 14px;
             float: left;
+            margin-top: 15px;
         }
         div {
             display: inline-block;
@@ -62,13 +63,20 @@
         .container {
             width: 700px;
         }
+        .onLoad {
+            width: 700px;
+            padding-bottom: 40px;
+        }
+        #highlight {
+            background-color: yellow;
+        }
     </style>
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js"></script>
     <script>
 
     //  If error, show a blank page
     function showError() {
-        $('body').hide();
+        $('.container').hide();
     }
 
     // Allow the zip code to be typed in as a query in the URL and verify for 5 digits
@@ -163,13 +171,27 @@
     });
     </script>
 </head>
-
 <body>
+    <div class="onLoad">
+        <span class="instructions">
+            <span id="title">Instructions:</span>
+            <hr>
+            1. Copy and paste the underlined text below into your browser after the "index.html".
+            <hr>
+            2. Modify the highlighted variables to access the weather data of your choosing within a 10 day future range.
+            <hr>
+            3. The app will break under two instances: An incorrect zip code is used, or an incorrect date formatting outside of the 10 day range is used.
+            <hr>
+            * Date formatting: month, day, year
+            <hr>
+            Copy and paste: <u>?zip_code=<span id="highlight">10038</span>&date=<span id="highlight">07/10/2015</span></u>
+        </span>
+    </div>
+    <br>
     <div class="container">
-        <div id="title">
+        <span id="title">
             Weather Forecast For <div id="location"></div>
-        </div>
-        <!-- use CSS and remove the br below -->
+        </span>
         <br>
         <div class="weatherBox">
             <div class="today">Today:</div>
@@ -194,5 +216,4 @@
         </div>
     </div>
 </body>
-
 </html>
