@@ -66,10 +66,12 @@
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js"></script>
     <script>
 
+    //  If error, show a blank page
     function showError() {
         $('body').hide();
     }
 
+    // Allow the zip code to be typed in as a query in the URL and verify for 5 digits
     $(document).ready(function($) {
         var zip = window.location.search.match(/zip_code=(\d{5})/)
         if (zip) {
@@ -78,6 +80,7 @@
             return showError();
         }
 
+        // Refactor, allow the date to be entered with slash formatting
         var date = window.location.search.match(/date=(\d{2}\/\d{2}\/\d{4})/)
         if (date) {
             date = date[1];
@@ -85,12 +88,15 @@
             return showError();
         }
 
+        // Split up the date so that it can be resembled and positioned correctly
         var dateSplit = date.split('/');
 
+        // Rearrange positioning of date
         var mm = dateSplit[0];
         var dd = dateSplit[1];
         var yyyy = dateSplit[2];
 
+        // Call the API and pull location name to be displayed on screen
         $.ajax({
             url : "http://api.wunderground.com/api/e0d2b72c995eb908/geolookup/conditions/q/zip/" + zip + ".json",
             dataType : "jsonp",
@@ -101,6 +107,7 @@
             error: showError
         });
 
+        // Call the API to reveal forecast information based upon the zip code entered
         $.ajax({
             url : "http://api.wunderground.com/api/e0d2b72c995eb908/forecast10day/q/zip/" + zip + ".json",
             dataType : "jsonp",
@@ -111,25 +118,26 @@
 
                 var forecasts = parsed_json.forecast.simpleforecast.forecastday;
 
+                // Arrange date formatting
                 var day1 = new Date(yyyy + '-' + mm + '-' + dd);
 
-                // convert to local timezone
+                // Convert to local timezone, rather than having Greenwich time which offsets it by 3hrs
                 day1.setHours(day1.getHours() + new Date().getTimezoneOffset() / 60)
 
+                // Add days from original input date for three day forecast
                 var day2 = new Date(day1);
                 var day3 = new Date(day1);
                 day2.setDate(day1.getDate()+1);
                 day3.setDate(day1.getDate()+2);
 
+                // Loop through each days to display appropriate information in weather boxes
                 $.each([day1, day2, day3], function (index) {
                     var day = this;
                     var forecast = $.grep(forecasts, function (forecast) {
                         var daysDate = forecast.date;
-
                         var match = daysDate.day === day.getDate() &&
                             daysDate.year === day.getFullYear() &&
                             daysDate.month === day.getMonth() + 1;
-
                         return match;
                     });
 
@@ -142,6 +150,7 @@
 
                     var $box = $('.weatherBox').eq(index);
 
+                    // Inject variables into html divs to display information to the screen
                     $box.find(".highTemp").html(forecast.high.fahrenheit + "&deg;");
                     $box.find(".lowTemp").html("/ " + forecast.low.fahrenheit + "&deg; F");
                     $box.find(".iconURL").html("<img src= " + forecast.icon_url + ">");
@@ -160,7 +169,8 @@
         <div id="title">
             Weather Forecast For <div id="location"></div>
         </div>
-        <p>
+        <!-- use CSS and remove the br below -->
+        <br>
         <div class="weatherBox">
             <div class="today">Today:</div>
             <div class="iconURL"></div>
